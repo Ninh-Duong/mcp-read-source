@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-read-source"
+version = "0.1.0"
+description = "Read-only local source MCP with registered repository roots"
+requires-python = ">=3.10"
+dependencies = ["mcp>=2.0,<3"]
+
+[project.scripts]
+mcp-read-source = "mcp_read_source.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

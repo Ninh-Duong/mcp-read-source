@@ -1,0 +1,15 @@
+.venv/
+.tools/
+.uv-cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+config/private/
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
