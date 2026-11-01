@@ -6,10 +6,24 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-config/private/
 .env
 .env.*
 *.pem
 *.key
 *.pfx
 *.p12
+
+# Local-only data: never commit or push.
+# ai-context holds the encrypted index, its DPAPI-wrapped key and lock files.
+ai-context/
+**/ai-context/
+config/private/
+*.sqlite
+*.sqlite-*
+*.sqlite.enc
+*.enc
+*.db
+.key
+.key.*
+*.tmp
+.claude/settings.local.json

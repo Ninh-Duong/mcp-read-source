@@ -39,9 +39,10 @@ class SourceReaderTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "repo"
         self.root.mkdir()
-        self.reader = SourceReader({"sample": self.root})
+        self.reader = SourceReader({"sample": self.root}, context_dir=Path(self.temp.name) / "ai-context")
 
     def tearDown(self) -> None:
+        self.reader.store.close()
         self.temp.cleanup()
 
     def test_search_and_read_are_bounded_and_support_untracked_files(self) -> None:
@@ -97,7 +98,11 @@ class SourceReaderTest(unittest.TestCase):
         for index in range(501):
             content = "needle" if index == 500 else "other"
             (self.root / f"{index:03}.txt").write_text(content, encoding="utf-8")
-        self.assertEqual(self.reader.search("sample", "needle")["total"], 0)
+        with patch("mcp_read_source.server.MAX_SEARCH_FILES", 500):
+            result = self.reader.search("sample", "needle", mode="text")
+        self.assertEqual(result["total"], 0)
+        self.assertTrue(result["truncated"])
+        self.assertEqual(self.reader.search("sample", "needle", mode="text")["total"], 1)
         with self.assertRaises(SourceReadError):
             self.reader.search("local-path", "needle")
 
@@ -121,13 +126,19 @@ class SourceReaderTest(unittest.TestCase):
         def stat_candidate(path, *args, **kwargs):
             return stat(hidden, *args, **kwargs) if path == alias else stat(path, *args, **kwargs)
 
+        is_symlink = Path.is_symlink
+
+        def is_candidate_symlink(path):
+            return True if path == alias else is_symlink(path)
+
         with (
             patch("mcp_read_source.server.os.walk", return_value=[(str(root), [], ["safe.py"])]),
             patch.object(Path, "resolve", resolve_candidate),
             patch.object(Path, "is_file", is_candidate_file),
             patch.object(Path, "stat", stat_candidate),
+            patch.object(Path, "is_symlink", is_candidate_symlink),
         ):
-            self.assertEqual(list(self.reader._candidate_files(root)), [])
+            self.assertEqual(self.reader._candidate_files(root)[0], [])
             with self.assertRaises(SourceReadError):
                 self.reader.read("sample", "safe.py")
 

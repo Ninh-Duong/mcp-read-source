@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/ai-context/**)",
+      "Edit(**/ai-context/**)",
+      "Write(**/ai-context/**)",
+      "Read(**/config/private/**)",
+      "Edit(**/config/private/**)",
+      "Write(**/config/private/**)",
+      "Read(**/.env)",
+      "Read(**/.env.*)"
+    ]
+  }
+}
